@@ -1,4 +1,5 @@
 # 🫀 LiteMedSAM-LoRA: Parameter-Efficient 3D Coronary Artery Segmentation & Mesh Generation
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/tuo-username/LiteMedSAM-LoRA-Coronary-Segmentation/blob/main/LiteMedSAM_Coronary_Segmentation.ipynb)
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch 2.x](https://img.shields.io/badge/PyTorch-2.x-EE4C2C.svg?logo=pytorch)](https://pytorch.org/)
