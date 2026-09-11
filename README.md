@@ -6,6 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com)
 [![Dataset](https://img.shields.io/badge/Dataset-ASOCA-informational)](https://asoca.grand-challenge.org/)
+[![SQL Analytics](https://img.shields.io/badge/SQL-SQLite%20Analytics-003B57.svg?logo=sqlite&logoColor=white)](sql/)
 
 An end-to-end, lightweight deep learning pipeline for **3D Coronary Artery Segmentation** in Cardiac Computed Tomography Angiography (**CCTA**) volumes. 
 
@@ -19,6 +20,7 @@ This repository leverages **LiteMedSAM** (TinyViT-5M backbone) adapted via **LoR
 - [Pipeline Architecture](#-pipeline-architecture)
 - [Mathematical Formulation (Loss Function)](#-mathematical-formulation-loss-function)
 - [Repository Structure](#-repository-structure)
+- [SQL Clinical Analytics Layer](#-sql-clinical-analytics-layer)
 - [Installation & Setup](#-installation--setup)
 - [Dataset Preparation (ASOCA)](#-dataset-preparation-asoca)
 - [Training](#-training)
@@ -125,6 +127,12 @@ LiteMedSAM-LoRA-Coronary-Segmentation/
 ├── postprocessing/
 │   ├── morphological.py        # Sandwich cleaning (remove small objects + ball closing)
 │   └── mesh_export.py          # Marching cubes surface extraction and STL exporter
+├── sql/                        # 🗄️ Relational Clinical Analytics Layer
+│   ├── README.md               # SQL architecture, ERD, and design decisions
+│   ├── schema.sql              # 3NF SQLite DDL (patients, scans, model_evaluations)
+│   ├── build_db.py             # Database generator & seed exporter (pure Python)
+│   ├── run_queries.py          # CLI runner & formatted ASCII/Markdown table generator
+│   └── queries/                # Analytical SQL suite (JOINs, Window Functions, CTEs)
 ├── train.py                    # Training loop with step scheduler and validation
 ├── inference.py                # Full-volume 3D inference engine with TTA
 ├── requirements.txt            # Python dependencies
@@ -260,6 +268,26 @@ python postprocessing/mesh_export.py \
   --weights checkpoints/LiteMedSAM_best.pth \
   --output_dir ./stl_exports/
 ```
+
+---
+
+## 🗄️ SQL Clinical Analytics Layer
+
+To bridge **Deep Learning Computer Vision** and **Healthcare Relational Analytics**, this repository includes a dedicated SQLite database and analytical SQL suite under [`sql/`](sql/):
+
+- **3NF Relational Model:** Normalized tables linking patient baseline risk (`patients`: diagnosis, age, calcification severity, stent), acquisition geometry (`scans`: slice count, in-plane and through-plane voxel spacing), and volumetric model metrics (`model_evaluations`: Dice, IoU, HD95, sensitivity, inference time).
+- **Clinical Auditing & Insights:**
+  - Quantifies the impact of **coronary artery calcifications** on boundary segmentation errors (HD95 increases from $1.52\text{ mm}$ to $4.08\text{ mm}$ in severely calcified vessels).
+  - Demonstrates a **+44.4% net Dice gain** of `LiteMedSAM-LoRA` over zero-shot MedSAM in diseased anatomies via multi-stage CTEs.
+  - Classifies reconstructed segmentations into clinical quality tiers for 3D printing and CAD readiness.
+- **Advanced SQL Patterns Demonstrated:** Multi-table `INNER JOIN`s, analytical window functions (`RANK() OVER (PARTITION BY ...)`), window aggregations (`AVG() OVER`), CTEs (`WITH`), and conditional aggregation (`CASE WHEN`).
+
+```bash
+# Execute the automated analytics suite and print formatted tables:
+python sql/run_queries.py
+```
+
+*For complete schema documentation, entity-relationship diagrams, and architectural design decisions, see [sql/README.md](sql/README.md).*
 
 ---
 
